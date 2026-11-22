@@ -6,7 +6,9 @@ import { registerUsageSource } from "./src/usage-source";
 
 const SKILL_ROOTS = {
   user: [
+    { path: ".agents/skills", recursive: true },
     { path: ".gemini/config/skills", recursive: true },
+    { path: ".gemini/skills", recursive: true },
     { path: ".gemini/antigravity-cli/skills", recursive: true },
   ],
   project: [
