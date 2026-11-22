@@ -15,7 +15,7 @@ Run `agy` in a terminal on a machine to sign in. If a machine is not signed in, 
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/risonsimon/bb-plugin-antigravity@main
+bb plugin install https://github.com/risonsimon/bb-plugin-antigravity
 ```
 
 bb tracks `main` directly and offers new commits as updates.
