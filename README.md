@@ -1,15 +1,30 @@
 # bb-plugin-antigravity
 
-Runs Google Antigravity in bb over its native ACP server (`agy acp`) and shows
-its quota on bb's Usage screen.
+Google Antigravity agent provider and usage plugin for [bb](https://getbb.app).
 
-- Provider: `antigravity`, using bb's published ACP bridge with an
-  `antigravity` dialect for usage.
-- Usage: `agy -p /usage --output-format json` (agy >= 1.1.11), run the way
-  CodexBar does it: private temp directory, `AGY_CLI_DISABLE_AUTO_UPDATE=true`,
-  failing `open`/`xdg-open` so no browser sign-in starts, 90 s and 1 MiB limits.
+- Adds Google Antigravity as a bb agent provider over ACP (`agy acp`), with all Antigravity models in bb's model picker.
+- Shows Antigravity quota on bb's Usage screen and in the sidebar usage panel.
 
-Requires `agy` installed and signed in on each machine.
+## Requirements
+
+- [bb](https://getbb.app) 0.50 or newer
+- [Antigravity CLI](https://antigravity.google/docs/getting-started) (`agy`) 1.1.11 or newer, installed and signed in on each machine
+
+Run `agy` in a terminal on a machine to sign in. If a machine is not signed in, it appears as unauthenticated on the Usage screen.
+
+## Install
+
+```sh
+bb plugin install 'git:https://github.com/risonsimon/bb-plugin-antigravity@semver:*'
+```
+
+bb installs the latest release and offers each new release as an update.
+
+## Compatibility
+
+This plugin uses experimental bb plugin APIs, so a bb update may need a new plugin release.
+
+## Development
 
 ```sh
 npm install
@@ -17,3 +32,7 @@ npm test
 bb plugin build .
 bb plugin install .
 ```
+
+## License
+
+[MIT](LICENSE)

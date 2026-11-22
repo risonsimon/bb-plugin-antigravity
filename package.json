@@ -33,5 +33,6 @@
     "build": "bb plugin build",
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types src/*.test.ts"
-  }
+  },
+  "license": "MIT"
 }
