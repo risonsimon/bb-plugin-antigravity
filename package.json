@@ -1,0 +1,36 @@
+{
+  "name": "bb-plugin-antigravity",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "bb": ">=0.50",
+    "bbPluginSdk": ">=0.6.157"
+  },
+  "bb": {
+    "name": "Antigravity",
+    "description": "Run Google Antigravity threads over ACP and show its quota in Usage.",
+    "branding": {
+      "icon": "./icons/antigravity.svg"
+    },
+    "server": "./server.ts",
+    "host": "./host.ts"
+  },
+  "dependencies": {
+    "@get-bb/plugin-sdk": "0.6.157"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "better-sqlite3": "^12.0.0",
+    "hono": "^4.11.9",
+    "typescript": "^5.7.0"
+  },
+  "description": "Run Google Antigravity (agy acp) in bb, with its quota on the Usage screen.",
+  "scripts": {
+    "build": "bb plugin build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types src/*.test.ts"
+  }
+}
