@@ -2,6 +2,8 @@
 // ACP bridge (`agy acp`, see host.ts); the Usage screen reads agy's quota.
 import type { BbPluginApi } from "@get-bb/plugin-sdk";
 
+import { registerUsageSource } from "./src/usage-source";
+
 const SKILL_ROOTS = {
   user: [
     { path: ".gemini/config/skills", recursive: true },
@@ -52,4 +54,5 @@ export default async function plugin(bb: BbPluginApi) {
     },
     composerActions: [],
   });
+  registerUsageSource(bb);
 }
