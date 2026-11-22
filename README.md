@@ -15,10 +15,10 @@ Run `agy` in a terminal on a machine to sign in. If a machine is not signed in, 
 ## Install
 
 ```sh
-bb plugin install 'git:https://github.com/risonsimon/bb-plugin-antigravity@semver:*'
+bb plugin install git:https://github.com/risonsimon/bb-plugin-antigravity
 ```
 
-bb installs the latest release and offers each new release as an update.
+bb installs the latest version from `main` and offers new commits as updates.
 
 ## Compatibility
 
