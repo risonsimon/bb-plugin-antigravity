@@ -1,11 +1,11 @@
 // Antigravity quota for bb's Usage screen.
 //
-// `agy -p /usage --output-format json` (agy >= 1.1.11) prints the same quota
-// summary as the TUI's /usage command. It sends no model prompt and uses agy's
-// own sign-in, so this plugin never touches Google credentials. The run is
-// hardened the way CodexBar does it: a private temp directory, auto-update off,
-// browser launchers that fail instead of opening a sign-in page, and a bounded
-// time and output size.
+// `agy -p /usage --output-format json` prints the same quota summary as the
+// TUI's /usage command. It sends no model prompt and uses agy's own sign-in,
+// so this plugin never touches Google credentials. The run is hardened the way
+// CodexBar does it: a private temp directory, auto-update off, browser
+// launchers that fail instead of opening a sign-in page, and a bounded time
+// and output size.
 
 import { execFile } from "node:child_process";
 import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
@@ -61,10 +61,23 @@ function windowLabel(bucket: Bucket): string {
   return typeof bucket.name === "string" && bucket.name ? bucket.name : window || "Limit";
 }
 
+const NOT_JSON_MESSAGE = "agy printed a usage report that is not JSON.";
+
 function isoOrNull(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const time = Date.parse(value);
-  return Number.isNaN(time) ? null : new Date(time).toISOString();
+  // agy emits the Unix epoch ("1970-01-01T00:00:00Z") for unused buckets with no reset window yet.
+  if (Number.isNaN(time) || time <= 0) return null;
+  return new Date(time).toISOString();
+}
+
+function cleanDetail(text: string): string | null {
+  const line = text
+    .split(/\r?\n/u)
+    .map((entry) => entry.trim())
+    .find((entry) => entry.length > 0 && !entry.startsWith("ERROR: logging before"));
+  if (!line) return null;
+  return line.length > 240 ? `${line.slice(0, 237)}...` : line;
 }
 
 /** Parse the JSON `agy -p /usage --output-format json` prints. */
@@ -73,7 +86,7 @@ export function parseUsageReport(stdout: string): UsageReport {
   try {
     report = JSON.parse(stdout);
   } catch {
-    return { status: "error", message: "agy printed a usage report that is not JSON." };
+    return { status: "error", message: NOT_JSON_MESSAGE };
   }
   if (typeof report !== "object" || report === null) {
     return { status: "error", message: "agy printed an empty usage report." };
@@ -85,11 +98,12 @@ export function parseUsageReport(stdout: string): UsageReport {
   };
   const groups = record.command?.data?.groups;
   if (record.status !== "SUCCESS" || !Array.isArray(groups)) {
-    const text = typeof record.response === "string" ? record.response : "";
+    const text = typeof record.response === "string" ? record.response.trim() : "";
     if (SIGN_IN_PATTERN.test(text)) return { status: "unauthenticated" };
+    const detail = cleanDetail(text);
     return {
       status: "error",
-      message: `agy could not report usage (${typeof record.status === "string" ? record.status : "no status"}).`,
+      message: detail ?? `agy could not report usage (${typeof record.status === "string" ? record.status : "no status"}).`,
     };
   }
 
@@ -165,16 +179,24 @@ export async function fetchUsage(baseEnv: NodeJS.ProcessEnv = process.env): Prom
     for (const command of agyCandidates()) {
       const result = await runOnce(command, dir, env);
       if (result.missing) continue;
-      if (result.stdout.trim().length > 0) {
-        const parsed = parseUsageReport(result.stdout);
-        if (parsed.status !== "error" || result.code === 0) return parsed;
+      const stdout = result.stdout.trim();
+      if (stdout.length > 0) {
+        const parsed = parseUsageReport(stdout);
+        if (
+          parsed.status !== "error"
+          || result.code === 0
+          || parsed.message !== NOT_JSON_MESSAGE
+        ) {
+          return parsed;
+        }
       }
       if (SIGN_IN_PATTERN.test(result.stderr)) return { status: "unauthenticated" };
+      const detail = cleanDetail(result.stderr) ?? cleanDetail(stdout);
       return {
         status: "error",
         message: result.code === null
           ? "agy did not finish its usage report in time."
-          : `agy exited with code ${result.code} while reporting usage.`,
+          : detail ?? `agy exited with code ${result.code} while reporting usage.`,
       };
     }
     return { status: "not_installed" };

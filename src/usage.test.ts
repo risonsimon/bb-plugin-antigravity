@@ -21,7 +21,7 @@ const REPORT = {
         {
           name: "Claude and GPT models",
           buckets: [
-            { id: "3p-weekly", name: "Weekly Limit Remaining", window: "weekly", remaining_fraction: 1, reset_time: "2026-11-29T06:54:23Z" },
+            { id: "3p-weekly", name: "Weekly Limit Remaining", window: "weekly", remaining_fraction: 1, reset_time: "1970-01-01T00:00:00Z" },
             { id: "3p-off", name: "Off", window: "5h", remaining_fraction: 0.5, disabled: true },
           ],
         },
@@ -40,7 +40,7 @@ test("quota buckets become usage windows", () => {
   assert.deepEqual(report.status === "ok" ? report.windows : [], [
     { label: "Gemini · Weekly", usedPercent: 0.9, resetsAt: "2026-11-29T05:50:08.000Z" },
     { label: "Gemini · 5-hour", usedPercent: 3.2, resetsAt: "2026-11-22T10:50:08.000Z" },
-    { label: "Claude & GPT · Weekly", usedPercent: 0, resetsAt: "2026-11-29T06:54:23.000Z" },
+    { label: "Claude & GPT · Weekly", usedPercent: 0, resetsAt: null },
     { label: "Gemini 4 Argon · Weekly", usedPercent: 0, resetsAt: "2026-11-29T06:54:23.000Z" },
   ]);
 });
@@ -50,7 +50,11 @@ test("a sign-in failure is unauthenticated, not an error", () => {
   assert.deepEqual(report, { status: "unauthenticated" });
 });
 
-test("unparseable output is an error", () => {
+test("unparseable and non-auth errors", () => {
   assert.equal(parseUsageReport("not json").status, "error");
   assert.equal(parseUsageReport(JSON.stringify({ status: "SUCCESS", command: { data: { groups: [] } } })).status, "error");
+  assert.deepEqual(
+    parseUsageReport(JSON.stringify({ status: "ERROR", response: "Usage is not available with a Gemini API key." })),
+    { status: "error", message: "Usage is not available with a Gemini API key." },
+  );
 });
